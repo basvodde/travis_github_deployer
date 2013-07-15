@@ -6,13 +6,14 @@ Gem::Specification.new do |gem|
   gem.version = TravisGithubDeployerVersion::VERSION
   gem.date    = Date.today.to_s
   gem.executables = [ "travis_github_deployer" ]
+  gem.license = 'MIT'
 
   gem.summary = "Script to deploy to github from Travis CI"
   gem.description = "A Script and a library that help in deploying files from Travis CI builds to a Github Repository"
 
   gem.authors  = ['Bas Vodde']
   gem.email    = 'basv@odd-e.com'
-  gem.homepage = 'https://github.com/basvodde/travis_github_deployer.rb'
+  gem.homepage = 'https://github.com/basvodde/travis_github_deployer'
 
   gem.add_dependency('rake')
   gem.add_development_dependency('rspec', [">= 2.0.0"])
