@@ -25,6 +25,11 @@ class TravisGithubDeployer
   ## Deployment 
     
   def deploy
+    if (environment_variable_value('TRAVIS_PULL_REQUEST') != "false")
+      puts "In pull request and won't be deploying"
+      return
+    end
+    
     load_configuration
     clone_destination_repository
     change_current_directory_to_cloned_repository
@@ -77,7 +82,7 @@ class TravisGithubDeployer
     value
   end
     
-  def copy_files_to_deployment_repository
+  def copy_files_in_destination_repository
     
     files_to_deploy.each { |source_location, destination_location|
       source = Pathname.new(source_location)

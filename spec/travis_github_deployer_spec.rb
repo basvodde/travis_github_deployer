@@ -11,12 +11,20 @@ describe "travis github deployer" do
   end
   
   it "can deploy to an destination repository" do
+    ENV['TRAVIS_PULL_REQUEST']="false"
     subject.should_receive(:load_configuration)
     subject.should_receive(:clone_destination_repository)
     subject.should_receive(:change_current_directory_to_cloned_repository)
     subject.should_receive(:prepare_credentials_based_on_environment_variables)
     subject.should_receive(:copy_files_in_destination_repository)
     subject.should_receive(:commit_and_push_files)
+    subject.deploy
+  end
+  
+  it "will not deploy on a pull request" do
+    ENV['TRAVIS_PULL_REQUEST']="10"
+    subject.should_not_receive(:load_configuration)
+    subject.should_receive(:puts).with("In pull request and won't be deploying")
     subject.deploy
   end
   
@@ -77,14 +85,14 @@ describe "travis github deployer" do
     it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
       subject.should_receive(:files_to_deploy).and_return( { "sourcefile" => ""})
       FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("github_pages/sourcefile"))
-      subject.copy_files_to_deployment_repository
+      subject.copy_files_in_destination_repository
     end
     
     it "Should be able to copy multiple files" do
       subject.should_receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
       FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("github_pages/destonefile"))
       FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("github_pages/dir/desttwofile"))
-      subject.copy_files_to_deployment_repository      
+      subject.copy_files_in_destination_repository      
     end
   end
   

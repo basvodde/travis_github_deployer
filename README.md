@@ -20,8 +20,10 @@ You can set up these environment variables in a secure way using the travis gem,
 {% highlight bash %}
 $ gem install travis
 $ cd <name of your repository>
-$ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' https://api.github.com/authorizations
-$ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> GH_TOKEN=<your token>' --add
+$ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' \
+	https://api.github.com/authorizations
+$ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> \
+	GH_TOKEN=<your token>' --add
 {% endhighlight %}
 
 ### How does this work?
@@ -46,7 +48,7 @@ The Travis Github Deployer uses one config file: ".travis_github_deployer"
 
 A typical file looks like this:
 
-```yaml
+```yml
 destination_repository: https://github.com/basvodde/travis_github_deployer.git
 
 files_to_deploy:
@@ -59,6 +61,15 @@ This yaml file configures the repository to push to to be travis_github_deployer
 
 ## Running Travis Github Deployer
 
+Then... running the travis_github_deployer is all you need to do, that is, after installing the gem:
+
+```bash
+$ gem install travis_github_deployer
+$ travis_github_deployer
+
+By default, the deployer will check whether there is a pull request or not and skip deploying on a pull request
+
+# Contributions
 
 
 
