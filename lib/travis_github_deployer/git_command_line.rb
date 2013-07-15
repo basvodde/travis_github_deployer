@@ -10,6 +10,18 @@ class GitCommandLine
     git("config #{key} '#{value}'")
   end
   
+  def add(filename)
+    git("add #{filename}")
+  end
+  
+  def commit(message)
+    git("commit -m \"#{message}\"")
+  end
+  
+  def push
+    git("push")
+  end
+  
   def config_username(username)
     config("user.name", username)
   end

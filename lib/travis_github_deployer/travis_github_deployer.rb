@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby -w
 
 require 'yaml'
+require 'pathname'
+require 'fileutils'
 
 class TravisGithubDeployer
   
@@ -32,9 +34,9 @@ class TravisGithubDeployer
     
     load_configuration
     clone_destination_repository
+    copy_files_in_destination_repository
     change_current_directory_to_cloned_repository
     prepare_credentials_based_on_environment_variables
-    copy_files_in_destination_repository
     commit_and_push_files
   end
 
@@ -86,7 +88,7 @@ class TravisGithubDeployer
     
     files_to_deploy.each { |source_location, destination_location|
       source = Pathname.new(source_location)
-      destination = Pathname.new("github_pages")
+      destination = Pathname.new(destination_repository_dir)
       destination += destination_location.empty? ? source_location : destination_location
       FileUtils.copy(source, destination)
     }
@@ -94,6 +96,11 @@ class TravisGithubDeployer
   end
   
   def commit_and_push_files
+    files_to_deploy.each { |source_location, destination_location|
+      @git.add(Pathname.new(destination_location))
+    }
+    @git.commit("File deployed with Travis Github Deployer")
+    @git.push
   end
     
 end

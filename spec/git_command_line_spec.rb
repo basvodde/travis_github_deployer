@@ -10,6 +10,21 @@ describe "simple ruby interface around git command line" do
     subject.clone("repository", "destination")
   end
   
+  it "can add files" do
+    subject.should_receive(:git).with("add filename")
+    subject.add("filename")
+  end
+  
+  it "can commit" do
+    subject.should_receive(:git).with('commit -m "message"')
+    subject.commit("message")
+  end
+  
+  it "can push" do
+    subject.should_receive(:git).with("push")
+    subject.push
+  end
+  
   it "can do a config" do
     subject.should_receive(:git).with("config key 'value'")
     subject.config("key", "value")

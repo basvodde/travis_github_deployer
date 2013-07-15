@@ -83,16 +83,30 @@ describe "travis github deployer" do
   context "Prepare the changes that need to be made commit" do
     
     it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
+      subject.should_receive(:destination_repository_dir).and_return("destdir")
       subject.should_receive(:files_to_deploy).and_return( { "sourcefile" => ""})
-      FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("github_pages/sourcefile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("destdir/sourcefile"))
       subject.copy_files_in_destination_repository
     end
     
     it "Should be able to copy multiple files" do
+      subject.should_receive(:destination_repository_dir).exactly(2).times.and_return("destdir")
       subject.should_receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
-      FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("github_pages/destonefile"))
-      FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("github_pages/dir/desttwofile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("destdir/destonefile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("destdir/dir/desttwofile"))
       subject.copy_files_in_destination_repository      
+    end
+  end
+  
+  context "Actually committing the files" do
+    
+    it "can add, commit and push up the files" do
+      subject.should_receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
+      @git.should_receive(:add).with(Pathname.new("destonefile"))
+      @git.should_receive(:add).with(Pathname.new("dir/desttwofile"))
+      @git.should_receive(:commit).with("File deployed with Travis Github Deployer")
+      @git.should_receive(:push)
+      subject.commit_and_push_files
     end
   end
   

@@ -66,12 +66,20 @@ Then... running the travis_github_deployer is all you need to do, that is, after
 ```bash
 $ gem install travis_github_deployer
 $ travis_github_deployer
+```
 
 By default, the deployer will check whether there is a pull request or not and skip deploying on a pull request
 
 # Contributions
 
+At the time I write this README, the project is at a very initial stage and just written to get something of myself to work. However, I've thought about more improvements...
 
+* Support for putting configuration inside the .travis.yml instead
+* Support for passing the configuration to the script as parameter
+* Support for committing in the same repository as was checked out by travis CI (no need to clone)
+* Support for wildcards on files
+* Some integration tests
+* More
 
-
+Contributions are more than welcome, please send your pull requests. Do remember, code is test-driven and no code will be accepted without tests...
 
