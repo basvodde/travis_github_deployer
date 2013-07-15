@@ -5,6 +5,7 @@ Gem::Specification.new do |gem|
   gem.name    = 'travis_github_deployer'
   gem.version = TravisGithubDeployerVersion::VERSION
   gem.date    = Date.today.to_s
+  gem.executables = [ "travis_github_deployer" ]
 
   gem.summary = "Script to deploy to github from Travis CI"
   gem.description = "A Script and a library that help in deploying files from Travis CI builds to a Github Repository"

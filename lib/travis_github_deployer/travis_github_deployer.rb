@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby -w
 
-require 'YAML'
+require 'yaml'
 
 class TravisGithubDeployer
   
@@ -15,7 +15,7 @@ class TravisGithubDeployer
   end
   
   def destination_repository_dir
-    @destination_repository_dir
+    @destination_repository_dir ||= "travis_github_deployer_repository"
   end
   
   def files_to_deploy
