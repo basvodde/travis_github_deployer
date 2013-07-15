@@ -17,21 +17,22 @@ In order for Travis CI to be 'allowed' to push up the changes into a Github repo
 
 You can set up these environment variables in a secure way using the travis gem, in the following way:
 
-{% highlight bash %}
+```bash
 $ gem install travis
 $ cd <name of your repository>
 $ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' \
 	https://api.github.com/authorizations
 $ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> \
 	GH_TOKEN=<your token>' --add
-{% endhighlight %}
+```
 
 ### How does this work?
 
 The following command:
 
 ```bash
-$ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' https://api.github.com/authorizations
+$ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' \
+	https://api.github.com/authorizations
 ```
 
 This will get an authentication token. With it, Travis CI can commit under your name. So be careful with it. Then with the following command:
