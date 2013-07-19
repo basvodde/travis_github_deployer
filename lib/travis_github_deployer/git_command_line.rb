@@ -34,10 +34,29 @@ class GitCommandLine
     config("credential.helper", "store --file=#{filename}")
   end
   
+  def verbose=(value)
+    @verbose = true
+  end
+  
+  def verbose
+    @verbose
+  end
+  
   def git(command)
-    output = `git #{command} 2>&1`
-    raise StandardError, "Git command: '#{command}' failed. Message: : " + output unless $?.success?
+    git_command = "git #{command}"
+    puts("command: #{git_command}") if verbose
+    output = do_system("#{git_command} 2>&1")
+    puts("output: #{output}") if verbose
+    raise StandardError, "Git command: '#{command}' failed. Message: : " + output unless previous_command_success
     output
+  end
+  
+  def do_system(command)
+    `#{command}`
+  end
+  
+  def previous_command_success
+    $?.success?
   end
   
 end

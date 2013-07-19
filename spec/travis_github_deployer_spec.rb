@@ -8,6 +8,7 @@ describe "travis github deployer" do
   before(:each) do
     @git = mock
     GitCommandLine.should_receive(:new).and_return(@git)
+    subject
   end
   
   it "can deploy to an destination repository" do
@@ -83,19 +84,17 @@ describe "travis github deployer" do
   context "Prepare the changes that need to be made commit" do
     
     it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
-      subject.should_receive(:destination_repository_dir).and_return("destdir")
       subject.should_receive(:files_to_deploy).and_return( { "sourcefile" => ""})
-      FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("destdir/sourcefile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("travis_github_deployer_repository"))
       subject.copy_files_in_destination_repository
     end
     
     it "Should be able to copy multiple files" do
-      subject.should_receive(:destination_repository_dir).exactly(2).times.and_return("destdir")
       subject.should_receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
-      FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("destdir/destonefile"))
-      FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("destdir/dir/desttwofile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("travis_github_deployer_repository/destonefile"))
+      FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("travis_github_deployer_repository/dir/desttwofile"))
       subject.copy_files_in_destination_repository      
-    end
+    end    
   end
   
   context "Actually committing the files" do
@@ -110,20 +109,50 @@ describe "travis github deployer" do
     end
   end
   
-  it "can read configuration parameters out of the .travis_github_deployer.yml" do
-    configuration = { 
-      "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
-      "files_to_deploy" => {
-        "source_dir/source_file" => "destination_dir/destination_file"
+  context "configuration" do
+    it "can read configuration parameters out of the .travis_github_deployer.yml" do
+      configuration = { 
+        "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
+        "files_to_deploy" => {
+          "source_dir/source_file" => "destination_dir/destination_file"
+        }
       }
-    }
     
-    YAML.should_receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
-    subject.load_configuration
+      YAML.should_receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
+      subject.should_receive(:prepare_files_to_deploy).with({"source_dir/source_file" => "destination_dir/destination_file"})
+      subject.load_configuration
     
-    subject.destination_repository.should== "https://github.com/cpputest/cpputest.github.io.git"
-    subject.files_to_deploy.should== { "source_dir/source_file" => "destination_dir/destination_file" }
+      subject.destination_repository.should== "https://github.com/cpputest/cpputest.github.io.git"
     
+    end
+    
+    it "can have files with wildcards in the configuration" do
+      wild_card_files = { "source_dir/*" => "destination_dir" }
+      Dir.should_receive(:glob).with("source_dir/*").and_return(["file1", "file2"])
+      
+      subject.prepare_files_to_deploy(wild_card_files)
+      subject.files_to_deploy.should== { "file1" => "destination_dir", "file2" => "destination_dir" }
+    end
+    
+    it "raises an error when one of the source files doesn't exists" do
+      Dir.should_receive(:glob).with("not_exists").and_return([])
+      expect { 
+        subject.prepare_files_to_deploy( { "not_exists" => "" }) 
+      }.to raise_error(StandardError, "File: 'not_exists' found in the configuration didn't exist. Deploy failed.")
+    end
+    
+        
+    it "isn't verbose by default" do
+      subject.command_line_arguments([""])
+      subject.verbose.should == false
+    end
+    
+    it "can be made verbose using the -v" do
+      @git.should_receive(:verbose=).with(true)
+
+      subject.command_line_arguments(["-v"])
+
+      subject.verbose.should== true      
+    end
   end
-    
 end

@@ -20,8 +20,21 @@ class TravisGithubDeployer
     @destination_repository_dir ||= "travis_github_deployer_repository"
   end
   
+  def git
+    @git
+  end
+  
+  def verbose
+    @verbose ||= false
+  end
+  
+  def verbose=(value)
+    git.verbose = value
+    @verbose = value
+  end
+  
   def files_to_deploy
-    @files_to_deploy
+    @files_to_deploy ||= {}
   end
     
   ## Deployment 
@@ -45,11 +58,32 @@ class TravisGithubDeployer
   def load_configuration
     configuration = YAML.load_file(".travis_github_deployer.yml")
     @destination_repository = configuration["destination_repository"]
-    @files_to_deploy = configuration["files_to_deploy"]
+    prepare_files_to_deploy(configuration["files_to_deploy"])
+  end
+  
+  def prepare_files_to_deploy files_hash
+    files_hash.each { |source_file_from_configuration, destination_file|
+      
+      source_files = Dir.glob(source_file_from_configuration)
+      
+      if source_files.empty?
+        raise StandardError.new("File: '#{source_file_from_configuration}' found in the configuration didn't exist. Deploy failed.") 
+      end
+      
+      source_files.each { |source_file|
+        files_to_deploy[source_file] = destination_file
+      }
+    }
+  end
+  
+  def command_line_arguments(arguments)
+    if (arguments[0] == "-v")
+      self.verbose = true
+    end
   end
 
   def clone_destination_repository
-    @git.clone(destination_repository, destination_repository_dir)
+    git.clone(destination_repository, destination_repository_dir)
   end
   
   def change_current_directory_to_cloned_repository
@@ -64,18 +98,18 @@ class TravisGithubDeployer
   
   def set_repository_token_based_on_enviroment_variable
     git_token = environment_variable_value("GIT_TOKEN")
-    @git.config_credential_helper_store_file(".git/travis_deploy_credentials")
+    git.config_credential_helper_store_file(".git/travis_deploy_credentials")
     File.open(".git/travis_deploy_credentials", "w") { |credential_file|
       credential_file.write("https://#{git_token}:@github.com")
     }
   end
   
   def set_username_based_on_environment_variable
-    @git.config_username(environment_variable_value("GIT_NAME"))
+    git.config_username(environment_variable_value("GIT_NAME"))
   end
   
   def set_email_based_on_environment_variable
-    @git.config_email(environment_variable_value("GIT_EMAIL"))
+    git.config_email(environment_variable_value("GIT_EMAIL"))
   end
   
   def environment_variable_value (environment_variable_name)
@@ -89,7 +123,7 @@ class TravisGithubDeployer
     files_to_deploy.each { |source_location, destination_location|
       source = Pathname.new(source_location)
       destination = Pathname.new(destination_repository_dir)
-      destination += destination_location.empty? ? source_location : destination_location
+      destination += destination_location
       FileUtils.copy(source, destination)
     }
     
@@ -97,15 +131,9 @@ class TravisGithubDeployer
   
   def commit_and_push_files
     files_to_deploy.each { |source_location, destination_location|
-      @git.add(Pathname.new(destination_location))
+      git.add(Pathname.new(destination_location))
     }
-    @git.commit("File deployed with Travis Github Deployer")
-    @git.push
+    git.commit("File deployed with Travis Github Deployer")
+    git.push
   end
-    
-end
-
-
-if __FILE__ == $0 then
-  GithubPagesDeployer.new.deploy
 end

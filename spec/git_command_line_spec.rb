@@ -45,18 +45,23 @@ describe "simple ruby interface around git command line" do
     subject.config_credential_helper_store_file("filename")
   end
   
-  
-  context "do_system" do
-    it "Should be able to do a successful command" do
-      subject.git('version').should start_with("git version")
-    end
-    
-    it "Should be able to raise an StandardError on failed commands" do
-      expect {
-        subject.git('error')
-      }.to raise_error(StandardError, "Git command: 'error' failed. Message: : git: 'error' is not a git command. See 'git --help'.\n\nDid you mean this?\n	rerere\n")
-    end
+  it "can do verbose output" do
+    subject.verbose=true
+    subject.should_receive(:puts).with("command: git something")
+    subject.should_receive(:do_system).with("git something 2>&1").and_return("output")
+    subject.should_receive(:previous_command_success).and_return(true)
+    subject.should_receive(:puts).with("output: output")
+    subject.git("something")    
   end
   
+  it "Should be able to do a successful command" do
+    subject.should_not_receive(:puts)
+    subject.git('version').should start_with("git version")
+  end
   
+  it "Should be able to raise an StandardError on failed commands" do
+    expect {
+      subject.git('error')
+    }.to raise_error(StandardError, "Git command: 'error' failed. Message: : git: 'error' is not a git command. See 'git --help'.\n\nDid you mean this?\n	rerere\n")
+  end
 end
