@@ -42,7 +42,7 @@ $ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> \
 	GH_TOKEN=<your token>' --add
 ```
 
-This will take the taken and add it to a 'secure' section in your travis.yml. The Travis Github Deployer will grab it from that section and use it to push up the changes to your repository
+This will take the token and add it to a 'secure' section in your travis.yml. The Travis Github Deployer will grab it from that section and use it to push up the changes to your repository
 
 ## Setting up the Travis Github Deployer
 
