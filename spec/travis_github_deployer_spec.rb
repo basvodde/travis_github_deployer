@@ -83,7 +83,7 @@ describe "travis github deployer" do
 
   context "Prepare the changes that need to be made commit" do
     
-    it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
+    it "should be able to copy a file from the root of the source repository to the root of the destination repository" do
       subject.should_receive(:files_to_deploy).and_return( { "sourcefile" => ""})
       FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("travis_github_deployer_repository"))
       subject.copy_files_in_destination_repository
