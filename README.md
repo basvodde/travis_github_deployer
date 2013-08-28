@@ -23,7 +23,7 @@ $ cd <name of your repository>
 $ curl -u <your username> -d '{"scopes":["public_repo"],"note":"Travis CI deployer"}' \
 	https://api.github.com/authorizations
 $ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> \
-	GH_TOKEN=<your token>' --add
+	GIT_TOKEN=<your token>' --add
 ```
 
 ### How does this work?
@@ -39,7 +39,7 @@ This will get an authentication token. With it, Travis CI can commit under your 
 
 ```bash
 $ travis encrypt 'GIT_NAME="<your name>" GIT_EMAIL=<your email> \
-	GH_TOKEN=<your token>' --add
+	GIT_TOKEN=<your token>' --add
 ```
 
 This will take the token and add it to a 'secure' section in your travis.yml. The Travis Github Deployer will grab it from that section and use it to push up the changes to your repository
