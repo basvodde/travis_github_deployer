@@ -46,7 +46,7 @@ This will take the token and add it to a 'secure' section in your travis.yml. Th
 
 ## Setting up the Travis Github Deployer
 
-The Travis Github Deployer uses one config file: ".travis_github_deployer"
+The Travis Github Deployer uses one config file: ".travis_github_deployer.yml"
 
 A typical file looks like this:
 
