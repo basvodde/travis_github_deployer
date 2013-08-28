@@ -95,6 +95,13 @@ describe "travis github deployer" do
       FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("travis_github_deployer_repository/dir/desttwofile"))
       subject.copy_files_in_destination_repository      
     end    
+
+    it "Should be able to copy a directory recursevly" do
+      subject.should_receive(:files_to_deploy).and_return({ "dir/subdir1/" => "subdir1/", "dir2/" => "dir2/"})
+      FileUtils.should_receive(:cp_r).with(Pathname.new("dir/subdir1/"), Pathname.new("travis_github_deployer_repository/subdir1/"))
+      FileUtils.should_receive(:cp_r).with(Pathname.new("dir2/"), Pathname.new("travis_github_deployer_repository/dir2/"))
+      subject.copy_files_in_destination_repository
+    end
   end
   
   context "Actually committing the files" do
