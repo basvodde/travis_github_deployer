@@ -85,14 +85,14 @@ describe "travis github deployer" do
     
     it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
       subject.should_receive(:files_to_deploy).and_return( { "sourcefile" => ""})
-      FileUtils.should_receive(:copy).with(Pathname.new("sourcefile"), Pathname.new("travis_github_deployer_repository"))
+      FileUtils.should_receive(:cp_r).with(Pathname.new("sourcefile"), Pathname.new("travis_github_deployer_repository"))
       subject.copy_files_in_destination_repository
     end
     
     it "Should be able to copy multiple files" do
       subject.should_receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
-      FileUtils.should_receive(:copy).with(Pathname.new("dir/onefile"), Pathname.new("travis_github_deployer_repository/destonefile"))
-      FileUtils.should_receive(:copy).with(Pathname.new("twofile"), Pathname.new("travis_github_deployer_repository/dir/desttwofile"))
+      FileUtils.should_receive(:cp_r).with(Pathname.new("dir/onefile"), Pathname.new("travis_github_deployer_repository/destonefile"))
+      FileUtils.should_receive(:cp_r).with(Pathname.new("twofile"), Pathname.new("travis_github_deployer_repository/dir/desttwofile"))
       subject.copy_files_in_destination_repository      
     end    
   end

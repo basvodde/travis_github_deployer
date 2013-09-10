@@ -124,7 +124,7 @@ class TravisGithubDeployer
       source = Pathname.new(source_location)
       destination = Pathname.new(destination_repository_dir)
       destination += destination_location
-      FileUtils.copy(source, destination)
+      FileUtils.cp_r(source, destination)
     }
     
   end
