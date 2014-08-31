@@ -23,7 +23,7 @@ describe "travis github deployer" do
   end
   
   it "will not deploy on a pull request" do
-    ENV['TRAVIS_PULL_REQUEST']="10"
+    ENV['TRAVIS_PULL_REQUEST']="10" or ENV['GIT_NAME']="false"
     subject.should_not_receive(:load_configuration)
     subject.should_receive(:puts).with("In pull request and won't be deploying")
     subject.deploy
