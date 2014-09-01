@@ -45,8 +45,7 @@ class TravisGithubDeployer
       return
     end
     
-    value = ENV['GIT_NAME']
-    if (value.nil?)
+    if (ENV['GIT_NAME'].nil?)
       puts "In fork and won't be deploying"
       return
     end
