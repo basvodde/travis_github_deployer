@@ -37,7 +37,7 @@ describe "travis github deployer" do
     subject.should_receive(:puts).with("In fork and won't be deploying")
     subject.deploy
   end
-
+  
   context "Prepare repository for being able to commit" do
     
     it "can clone the destination repository" do
@@ -66,7 +66,7 @@ describe "travis github deployer" do
       @git.should_receive(:config_username).with("basvodde")
       subject.set_username_based_on_environment_variable    
     end
-            
+      
     it "Should be able to set the password based on an environment variable" do
       ENV['GIT_EMAIL'] = "basv@bestcompanythatexists.com"
       @git.should_receive(:config_email).with("basv@bestcompanythatexists.com")
