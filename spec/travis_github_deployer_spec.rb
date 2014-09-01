@@ -6,13 +6,15 @@ describe "travis github deployer" do
   subject { TravisGithubDeployer.new}
     
   before(:each) do
-    @git = mock
+    ENV::clear
+    @git = double
     GitCommandLine.should_receive(:new).and_return(@git)
     subject
   end
   
   it "can deploy to an destination repository" do
     ENV['TRAVIS_PULL_REQUEST']="false"
+    ENV['GIT_NAME']="Foo"
     subject.should_receive(:load_configuration)
     subject.should_receive(:clone_destination_repository)
     subject.should_receive(:change_current_directory_to_cloned_repository)
@@ -26,6 +28,13 @@ describe "travis github deployer" do
     ENV['TRAVIS_PULL_REQUEST']="10"
     subject.should_not_receive(:load_configuration)
     subject.should_receive(:puts).with("In pull request and won't be deploying")
+    subject.deploy
+  end
+ 
+  it "will not deploy when run in a fork, e.g. when GIT_NAME isn't set" do
+    ENV['TRAVIS_PULL_REQUEST']="false"
+    subject.should_not_receive(:load_configuration)
+    subject.should_receive(:puts).with("In fork and won't be deploying")
     subject.deploy
   end
   
@@ -58,11 +67,6 @@ describe "travis github deployer" do
       subject.set_username_based_on_environment_variable    
     end
       
-    it "Should give an error message when the GIT_NAME isn't set" do
-      ENV['GIT_NAME'] = nil
-      expect {subject.set_username_based_on_environment_variable}.to raise_error(StandardError, "The GIT_NAME environment variable wasn't set.")
-    end
-      
     it "Should be able to set the password based on an environment variable" do
       ENV['GIT_EMAIL'] = "basv@bestcompanythatexists.com"
       @git.should_receive(:config_email).with("basv@bestcompanythatexists.com")
@@ -70,7 +74,7 @@ describe "travis github deployer" do
     end
       
     it "Should be able to write the github token based on an environment variable" do
-      credential_file = mock
+      credential_file = double
       ENV['GIT_TOKEN'] = "Token"
     
       @git.should_receive(:config_credential_helper_store_file).with(".git/travis_deploy_credentials")

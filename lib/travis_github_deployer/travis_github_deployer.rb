@@ -45,6 +45,11 @@ class TravisGithubDeployer
       return
     end
     
+    if (ENV['GIT_NAME'].nil?)
+      puts "In fork and won't be deploying"
+      return
+    end
+    
     load_configuration
     clone_destination_repository
     copy_files_in_destination_repository
