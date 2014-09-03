@@ -68,7 +68,6 @@ class TravisGithubDeployer
   
   def prepare_files_to_deploy file_sequence
     file_sequence.each { |file|
-      print( "\nfile == ", file, "\n")
       sources = Dir.glob(file["source"])
       if sources.empty?
         raise StandardError.new("File: '#{file["source"]}' found in the configuration didn't exist. Deploy failed.") 
