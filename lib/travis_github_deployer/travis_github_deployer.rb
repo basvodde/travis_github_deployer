@@ -66,17 +66,16 @@ class TravisGithubDeployer
     prepare_files_to_deploy(configuration["files_to_deploy"])
   end
   
-  def prepare_files_to_deploy files_hash
-    files_hash.each { |source_file_from_configuration, destination_file|
-      
-      source_files = Dir.glob(source_file_from_configuration)
-      
-      if source_files.empty?
-        raise StandardError.new("File: '#{source_file_from_configuration}' found in the configuration didn't exist. Deploy failed.") 
+  def prepare_files_to_deploy file_sequence
+    file_sequence.each { |file|
+      print( "\nfile == ", file, "\n")
+      sources = Dir.glob(file["source"])
+      if sources.empty?
+        raise StandardError.new("File: '#{file["source"]}' found in the configuration didn't exist. Deploy failed.") 
       end
       
-      source_files.each { |source_file|
-        files_to_deploy[source_file] = destination_file
+      sources.each { |source|   
+        files_to_deploy[source] = file["target"]
       }
     }
   end
