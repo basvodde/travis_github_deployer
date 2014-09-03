@@ -117,21 +117,41 @@ describe "travis github deployer" do
     it "can read configuration parameters out of the .travis_github_deployer.yml" do
       configuration = { 
         "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
-        "files_to_deploy" => {
-          "source_dir/source_file" => "destination_dir/destination_file"
-        }
+        "files_to_deploy" => [
+             "source" => "source_dir/source_file",
+             "target" => "destination_dir/destination_file",
+             "purge" => "yes"
+        ]
       }
     
       YAML.should_receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
-      subject.should_receive(:prepare_files_to_deploy).with({"source_dir/source_file" => "destination_dir/destination_file"})
+      subject.should_receive(:prepare_files_to_deploy).with([
+         "source" => "source_dir/source_file",
+         "target" => "destination_dir/destination_file",
+         "purge" => "yes"
+      ])
       subject.load_configuration
     
       subject.destination_repository.should== "https://github.com/cpputest/cpputest.github.io.git"
+   end
     
+    it "has the right stuff in files_to_deploy" do
+      files = [
+         "source" => "source_file",
+         "target" => "destination_dir",
+         "purge" => "yes"
+      ]
+      Dir.should_receive(:glob).with("source_file").and_return(["source_file"])
+      
+      subject.prepare_files_to_deploy(files)
+      subject.files_to_deploy.should== { "source_file" => "destination_dir" }
     end
     
     it "can have files with wildcards in the configuration" do
-      wild_card_files = { "source_dir/*" => "destination_dir" }
+      wild_card_files = [
+         "source" => "source_dir/*",
+         "target" => "destination_dir"
+      ]
       Dir.should_receive(:glob).with("source_dir/*").and_return(["file1", "file2"])
       
       subject.prepare_files_to_deploy(wild_card_files)
@@ -141,7 +161,8 @@ describe "travis github deployer" do
     it "raises an error when one of the source files doesn't exists" do
       Dir.should_receive(:glob).with("not_exists").and_return([])
       expect { 
-        subject.prepare_files_to_deploy( { "not_exists" => "" }) 
+        subject.prepare_files_to_deploy( [ "source" => "not_exists",
+          "target" => "" ]) 
       }.to raise_error(StandardError, "File: 'not_exists' found in the configuration didn't exist. Deploy failed.")
     end
     
@@ -158,5 +179,6 @@ describe "travis github deployer" do
 
       subject.verbose.should== true      
     end
+    
   end
 end
