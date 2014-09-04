@@ -68,7 +68,7 @@ class TravisGithubDeployer
     configuration = YAML.load_file(".travis_github_deployer.yml")
     @destination_repository = configuration["destination_repository"]
     prepare_files_to_deploy(configuration["files_to_deploy"])
-    prepare_files_to_purge(configuration["files_to_purge_from_history"])
+    files_to_purge.concat(configuration["files_to_purge_from_history"])
   end
   
   def prepare_files_to_deploy files_hash
@@ -83,12 +83,6 @@ class TravisGithubDeployer
       source_files.each { |source_file|
         files_to_deploy[source_file] = destination_file
       }
-    }
-  end
-  
-  def prepare_files_to_purge files_to_purge_list
-    files_to_purge_list.each { |file|     
-        files_to_purge << file
     }
   end
   

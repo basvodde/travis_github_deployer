@@ -117,20 +117,16 @@ describe "travis github deployer" do
     it "can read configuration parameters out of the .travis_github_deployer.yml" do
       configuration = { 
         "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
-        "files_to_deploy" => {
-          "source_dir/source_file" => "destination_dir/destination_file"
-        },
-        "files_to_purge_from_history" => [
-          "purged_file"
-        ]
+        "files_to_deploy" => {"source_dir/source_file" => "destination_dir/destination_file"},
+        "files_to_purge_from_history" => ["purge_me_1", "purge_me_2"]
       }
     
       YAML.should_receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
       subject.should_receive(:prepare_files_to_deploy).with({"source_dir/source_file" => "destination_dir/destination_file"})
-      subject.should_receive(:prepare_files_to_purge).with(["purged_file"])
       subject.load_configuration
     
       subject.destination_repository.should== "https://github.com/cpputest/cpputest.github.io.git"
+      subject.files_to_purge.should== ["purge_me_1", "purge_me_2"]
     
     end
     
@@ -140,11 +136,6 @@ describe "travis github deployer" do
       
       subject.prepare_files_to_deploy(wild_card_files)
       subject.files_to_deploy.should== { "file1" => "destination_dir", "file2" => "destination_dir" }
-    end
-    
-    it "saves files to purge" do
-      subject.prepare_files_to_purge([ "purge_me_1", "purge_me_2" ])
-      subject.files_to_purge.should== ["purge_me_1", "purge_me_2"]
     end
     
     it "raises an error when one of the source files doesn't exists" do
