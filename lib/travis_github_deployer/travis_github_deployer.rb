@@ -64,6 +64,7 @@ class TravisGithubDeployer
     configuration = YAML.load_file(".travis_github_deployer.yml")
     @destination_repository = configuration["destination_repository"]
     prepare_files_to_deploy(configuration["files_to_deploy"])
+    prepare_files_to_purge(configuration["files_to_purge_from_history"])
   end
   
   def prepare_files_to_deploy files_hash
@@ -79,6 +80,9 @@ class TravisGithubDeployer
         files_to_deploy[source_file] = destination_file
       }
     }
+  end
+  
+  def prepare_files_to_purge files_list
   end
   
   def command_line_arguments(arguments)

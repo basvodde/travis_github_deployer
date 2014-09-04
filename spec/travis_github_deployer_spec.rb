@@ -119,11 +119,15 @@ describe "travis github deployer" do
         "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
         "files_to_deploy" => {
           "source_dir/source_file" => "destination_dir/destination_file"
-        }
+        },
+        "files_to_purge_from_history" => [
+          "purged_file"
+        ]
       }
     
       YAML.should_receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
       subject.should_receive(:prepare_files_to_deploy).with({"source_dir/source_file" => "destination_dir/destination_file"})
+      subject.should_receive(:prepare_files_to_purge).with(["purged_file"])
       subject.load_configuration
     
       subject.destination_repository.should== "https://github.com/cpputest/cpputest.github.io.git"
