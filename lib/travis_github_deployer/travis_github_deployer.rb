@@ -37,6 +37,10 @@ class TravisGithubDeployer
     @files_to_deploy ||= {}
   end
     
+  def files_to_purge
+    @files_to_purge ||= []
+  end
+    
   ## Deployment 
     
   def deploy
@@ -82,7 +86,10 @@ class TravisGithubDeployer
     }
   end
   
-  def prepare_files_to_purge files_list
+  def prepare_files_to_purge files_to_purge_list
+    files_to_purge_list.each { |file|     
+        files_to_purge << file
+    }
   end
   
   def command_line_arguments(arguments)

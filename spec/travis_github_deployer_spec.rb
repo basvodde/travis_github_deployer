@@ -142,6 +142,11 @@ describe "travis github deployer" do
       subject.files_to_deploy.should== { "file1" => "destination_dir", "file2" => "destination_dir" }
     end
     
+    it "saves files to purge" do
+      subject.prepare_files_to_purge([ "purge_me_1", "purge_me_2" ])
+      subject.files_to_purge.should== ["purge_me_1", "purge_me_2"]
+    end
+    
     it "raises an error when one of the source files doesn't exists" do
       Dir.should_receive(:glob).with("not_exists").and_return([])
       expect { 
