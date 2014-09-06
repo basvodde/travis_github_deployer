@@ -87,7 +87,7 @@ describe "travis github deployer" do
 
   context "Prepare the changes that need to be made commit" do
     
-    it "should be able to copy a file from the root of the source repository to the root of the destination reportistory" do
+    it "should be able to copy a file from the root of the source repository to the root of the destination repository" do
       expect(subject).to receive(:files_to_deploy).and_return( { "sourcefile" => ""})
       expect(FileUtils).to receive(:cp_r).with(Pathname.new("sourcefile"), Pathname.new("travis_github_deployer_repository"))
       subject.copy_files_in_destination_repository
@@ -103,6 +103,16 @@ describe "travis github deployer" do
   
   context "Actually committing the files" do
     
+    it "can purge files from history and force-push" do
+      files = ["dir/onefile", "twofile"]
+      expect(subject).to receive(:files_to_purge).and_return(files, files)
+      allow(@git).to receive_messages(add: nil, commit: nil)
+      expect(@git).to receive(:filter_branch).with(files.join(" "))
+      expect(@git).to receive(:force_push)
+      subject.purge_files_from_history
+      subject.commit_and_push_files
+    end
+  
     it "can add, commit and push up the files" do
       expect(subject).to receive(:files_to_deploy).and_return({ "dir/onefile" => "destonefile", "twofile" => "dir/desttwofile"})
       expect(@git).to receive(:add).with(Pathname.new("destonefile"))
@@ -115,19 +125,41 @@ describe "travis github deployer" do
   
   context "configuration" do
     it "can read configuration parameters out of the .travis_github_deployer.yml" do
+      files_to_deploy = { "source_dir/source_file" => "destination_dir/destination_file" }
       configuration = { 
         "destination_repository" => "https://github.com/cpputest/cpputest.github.io.git",
-        "files_to_deploy" => {
-          "source_dir/source_file" => "destination_dir/destination_file"
-        }
+        "files_to_deploy" => files_to_deploy
       }
     
       expect(YAML).to receive(:load_file).with(".travis_github_deployer.yml").and_return(configuration)
-      expect(subject).to receive(:prepare_files_to_deploy).with({"source_dir/source_file" => "destination_dir/destination_file"})
+      expect(subject).to receive(:prepare_files_to_deploy).with(files_to_deploy)
       subject.load_configuration
     
       expect(subject.destination_repository).to eq("https://github.com/cpputest/cpputest.github.io.git")
     
+    end
+
+    it "can parse destination with file to purge" do
+      source = "src_file"
+      target = {"destination"=>"dest", "purge"=>"yes"}
+      expect(subject.get_destination_and_add_file_to_purge(source, target)).to eq("dest")
+      expect(subject.files_to_purge).to eq(["src_file"])
+    end
+    
+    it "can parse destination without file to purge" do
+      source = "src_file"
+      target = "dest"
+      expect(subject.get_destination_and_add_file_to_purge(source, target)).to eq("dest")
+      expect(subject.files_to_purge).to eq([])
+    end
+    
+    it "can have sources to purge from history" do
+      files_to_purge = { "myfile" => { "destination" => "destination_dir", "purge" => "yes" } }
+      expect(Dir).to receive(:glob).with("myfile").and_return(["myfile"])
+      
+      subject.prepare_files_to_deploy(files_to_purge)
+      expect(subject.files_to_deploy).to eq({ "myfile" => "destination_dir" })    
+      expect(subject.files_to_purge).to eq([ "myfile" ])
     end
     
     it "can have files with wildcards in the configuration" do
@@ -138,7 +170,7 @@ describe "travis github deployer" do
       expect(subject.files_to_deploy).to eq({ "file1" => "destination_dir", "file2" => "destination_dir" })
     end
     
-    it "raises an error when one of the source files doesn't exists" do
+    it "raises an error when one of the source files doesn't exist" do
       expect(Dir).to receive(:glob).with("not_exists").and_return([])
       expect { 
         subject.prepare_files_to_deploy( { "not_exists" => "" }) 

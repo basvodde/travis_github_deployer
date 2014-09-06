@@ -37,6 +37,10 @@ class TravisGithubDeployer
     @files_to_deploy ||= {}
   end
     
+  def files_to_purge
+    @files_to_purge ||= []
+  end
+    
   ## Deployment 
     
   def deploy
@@ -55,6 +59,7 @@ class TravisGithubDeployer
     copy_files_in_destination_repository
     change_current_directory_to_cloned_repository
     prepare_credentials_based_on_environment_variables
+    purge_files_from_history if not files_to_purge.empty?
     commit_and_push_files
   end
 
@@ -66,15 +71,24 @@ class TravisGithubDeployer
     prepare_files_to_deploy(configuration["files_to_deploy"])
   end
   
+  def get_destination_and_add_file_to_purge source, target_or_hash
+      if target_or_hash.instance_of?(Hash)
+        files_to_purge << source if (target_or_hash["purge"] == "yes")    
+        destination_file = target_or_hash["destination"]
+      else
+        destination_file = target_or_hash
+      end
+  end
+  
   def prepare_files_to_deploy files_hash
-    files_hash.each { |source_file_from_configuration, destination_file|
+    files_hash.each { |source, values|
       
-      source_files = Dir.glob(source_file_from_configuration)
-      
+      source_files = Dir.glob(source)      
       if source_files.empty?
-        raise StandardError.new("File: '#{source_file_from_configuration}' found in the configuration didn't exist. Deploy failed.") 
+        raise StandardError.new("File: '#{source}' found in the configuration didn't exist. Deploy failed.") 
       end
       
+      destination_file = get_destination_and_add_file_to_purge(source, values)  
       source_files.each { |source_file|
         files_to_deploy[source_file] = destination_file
       }
@@ -134,11 +148,19 @@ class TravisGithubDeployer
     
   end
   
+  def purge_files_from_history
+     git.filter_branch(files_to_purge.join(" "))
+  end
+  
   def commit_and_push_files
     files_to_deploy.each { |source_location, destination_location|
       git.add(Pathname.new(destination_location))
     }
     git.commit("File deployed with Travis Github Deployer")
-    git.push
+    if(files_to_purge.empty?) 
+      git.push
+    else
+      git.force_push
+    end
   end
 end
