@@ -18,6 +18,17 @@ class GitCommandLine
     git("commit -m \"#{message}\"")
   end
   
+  def filter_branch(patterns)
+    git("filter-branch --force --index-filter " +
+        "'git rm --cached --ignore-unmatch #{patterns}' " +
+        "--prune-empty --tag-name-filter cat -- --all"
+    )
+  end
+  
+  def force_push
+    git("push -f")
+  end
+  
   def push
     git("push")
   end
