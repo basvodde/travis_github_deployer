@@ -20,9 +20,23 @@ describe "simple ruby interface around git command line" do
     subject.commit("message")
   end
   
+  it "can purge files from history" do
+    expect(subject).to receive(:git).with(
+      "filter-branch --force --index-filter " +
+      "'git rm --cached --ignore-unmatch file1 file2' " +
+      "--prune-empty --tag-name-filter cat -- --all"
+    )
+    subject.filter_branch("file1 file2")
+  end
+  
   it "can push" do
     expect(subject).to receive(:git).with("push")
     subject.push
+  end
+  
+  it "can force-push" do
+    expect(subject).to receive(:git).with("push -f")
+    subject.force_push
   end
   
   it "can do a config" do
