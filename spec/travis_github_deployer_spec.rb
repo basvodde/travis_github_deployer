@@ -190,6 +190,5 @@ describe "travis github deployer" do
 
       expect(subject.verbose).to eq(true)      
     end
-    
   end
 end
