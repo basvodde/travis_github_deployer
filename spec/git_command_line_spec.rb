@@ -6,57 +6,57 @@ describe "simple ruby interface around git command line" do
   subject { GitCommandLine.new}
   
   it "can do a git clone" do
-    subject.should_receive(:git).with("clone repository destination")
+    expect(subject).to receive(:git).with("clone repository destination")
     subject.clone("repository", "destination")
   end
   
   it "can add files" do
-    subject.should_receive(:git).with("add filename")
+    expect(subject).to receive(:git).with("add filename")
     subject.add("filename")
   end
   
   it "can commit" do
-    subject.should_receive(:git).with('commit -m "message"')
+    expect(subject).to receive(:git).with('commit -m "message"')
     subject.commit("message")
   end
   
   it "can push" do
-    subject.should_receive(:git).with("push")
+    expect(subject).to receive(:git).with("push")
     subject.push
   end
   
   it "can do a config" do
-    subject.should_receive(:git).with("config key 'value'")
+    expect(subject).to receive(:git).with("config key 'value'")
     subject.config("key", "value")
   end
   
   it "can configure the username" do
-    subject.should_receive(:config).with("user.name", "basvodde")
+    expect(subject).to receive(:config).with("user.name", "basvodde")
     subject.config_username("basvodde")
   end
   
   it "can configure the email" do
-    subject.should_receive(:config).with("user.email", "basv@sokewl.com")
+    expect(subject).to receive(:config).with("user.email", "basv@sokewl.com")
     subject.config_email("basv@sokewl.com")
   end
   
   it "can configure the credential helper" do
-    subject.should_receive(:config).with("credential.helper", "store --file=filename")
+    expect(subject).to receive(:config).with("credential.helper", "store --file=filename")
     subject.config_credential_helper_store_file("filename")
   end
   
   it "can do verbose output" do
     subject.verbose=true
-    subject.should_receive(:puts).with("command: git something")
-    subject.should_receive(:do_system).with("git something 2>&1").and_return("output")
-    subject.should_receive(:previous_command_success).and_return(true)
-    subject.should_receive(:puts).with("output: output")
+    expect(subject).to receive(:puts).with("command: git something")
+    expect(subject).to receive(:do_system).with("git something 2>&1").and_return("output")
+    expect(subject).to receive(:previous_command_success).and_return(true)
+    expect(subject).to receive(:puts).with("output: output")
     subject.git("something")    
   end
   
   it "Should be able to do a successful command" do
-    subject.should_not_receive(:puts)
-    subject.git('version').should start_with("git version")
+    expect(subject).not_to receive(:puts)
+    expect(subject.git('version')).to start_with("git version")
   end
   
   it "Should be able to raise an StandardError on failed commands" do
