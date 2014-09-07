@@ -73,7 +73,7 @@ class TravisGithubDeployer
   
   def get_destination_and_add_file_to_purge source, target_or_hash
       if target_or_hash.instance_of?(Hash)
-        files_to_purge << source if (target_or_hash["purge"] == "yes")    
+        files_to_purge << source if target_or_hash["purge"]   
         destination_file = target_or_hash["destination"]
       else
         destination_file = target_or_hash

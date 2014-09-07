@@ -135,13 +135,12 @@ describe "travis github deployer" do
       expect(subject).to receive(:prepare_files_to_deploy).with(files_to_deploy)
       subject.load_configuration
     
-      expect(subject.destination_repository).to eq("https://github.com/cpputest/cpputest.github.io.git")
-    
+      expect(subject.destination_repository).to eq("https://github.com/cpputest/cpputest.github.io.git")   
     end
 
     it "can parse destination with file to purge" do
       source = "src_file"
-      target = {"destination"=>"dest", "purge"=>"yes"}
+      target = {"destination"=>"dest", "purge"=>true}
       expect(subject.get_destination_and_add_file_to_purge(source, target)).to eq("dest")
       expect(subject.files_to_purge).to eq(["src_file"])
     end
@@ -154,7 +153,7 @@ describe "travis github deployer" do
     end
     
     it "can have sources to purge from history" do
-      files_to_purge = { "myfile" => { "destination" => "destination_dir", "purge" => "yes" } }
+      files_to_purge = { "myfile" => { "destination" => "destination_dir", "purge" => true } }
       expect(Dir).to receive(:glob).with("myfile").and_return(["myfile"])
       
       subject.prepare_files_to_deploy(files_to_purge)
@@ -177,7 +176,19 @@ describe "travis github deployer" do
       }.to raise_error(StandardError, "File: 'not_exists' found in the configuration didn't exist. Deploy failed.")
     end
     
-        
+   it "parses the real yaml file correctly" do
+      allow(subject).to receive (:prepare_files_to_deploy) do |files_hash|
+        files_hash.each { |source, values|
+          subject.get_destination_and_add_file_to_purge(source, values)  
+        }
+      end
+          
+      subject.load_configuration
+      expect(subject.files_to_purge).to eq(
+        ["cpputest_build/cpputest-3.7dev.tar.gz", "cpputest_build/cpputest-3.7dev.zip"]
+      )
+    end
+    
     it "isn't verbose by default" do
       subject.command_line_arguments([""])
       expect(subject.verbose).to eq(false)
