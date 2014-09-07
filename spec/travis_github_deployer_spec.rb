@@ -176,15 +176,6 @@ describe "travis github deployer" do
       }.to raise_error(StandardError, "File: 'not_exists' found in the configuration didn't exist. Deploy failed.")
     end
     
-   def prepare_files_to_deploy_stub files_hash
-     files_hash.each { |source, values|
-       destination_file = get_destination_and_add_file_to_purge(source, values)  
-       source_files.each { |source_file|
-         files_to_deploy[source_file] = destination_file
-       }
-     }
-   end
-  
    it "parses the real yaml file correctly" do
       allow(subject).to receive (:prepare_files_to_deploy) do |files_hash|
         files_hash.each { |source, values|
