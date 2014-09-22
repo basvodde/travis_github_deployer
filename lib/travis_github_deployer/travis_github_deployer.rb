@@ -8,6 +8,7 @@ class TravisGithubDeployer
   
   def initialize
     @git = GitCommandLine.new
+    @pwd = Dir.pwd
   end
   
   ## Configuration values
@@ -22,6 +23,10 @@ class TravisGithubDeployer
   
   def git
     @git
+  end
+  
+  def pwd
+    @pwd
   end
   
   def verbose
@@ -56,10 +61,10 @@ class TravisGithubDeployer
     
     load_configuration
     clone_destination_repository
+    purge_files_from_history if not files_to_purge.empty?
     copy_files_in_destination_repository
     change_current_directory_to_cloned_repository
     prepare_credentials_based_on_environment_variables
-    purge_files_from_history if not files_to_purge.empty?
     commit_and_push_files
   end
 
@@ -71,13 +76,20 @@ class TravisGithubDeployer
     prepare_files_to_deploy(configuration["files_to_deploy"])
   end
   
+  def add_file_to_purge file, target
+    file_to_purge = File.directory?(target) ? "#{target}/#{File.basename(file)}" : target
+    if(!File.exists?(file_to_purge))
+      raise StandardError.new("File: '#{file_to_purge}' found in the configuration didn't exist. Purge failed.") 
+    end
+    files_to_purge << file_to_purge
+  end
+  
   def get_destination_and_add_file_to_purge source, target_or_hash
-      if target_or_hash.instance_of?(Hash)
-        files_to_purge << source if target_or_hash["purge"]   
-        destination_file = target_or_hash["destination"]
-      else
-        destination_file = target_or_hash
-      end
+    if target_or_hash.instance_of?(Hash)
+      add_file_to_purge(source, target_or_hash["destination"]) if target_or_hash["purge"]   
+      return target_or_hash["destination"] 
+    end 
+    return target_or_hash
   end
   
   def prepare_files_to_deploy files_hash
@@ -107,6 +119,10 @@ class TravisGithubDeployer
   
   def change_current_directory_to_cloned_repository
     Dir.chdir(destination_repository_dir)
+  end
+
+  def change_current_directory_back_to_original
+    Dir.chdir(pwd)
   end
 
   def prepare_credentials_based_on_environment_variables
@@ -149,7 +165,9 @@ class TravisGithubDeployer
   end
   
   def purge_files_from_history
-     git.filter_branch(files_to_purge.join(" "))
+    change_current_directory_to_cloned_repository
+    git.filter_branch(files_to_purge.join(" "))
+    change_current_directory_back_to_original
   end
   
   def commit_and_push_files

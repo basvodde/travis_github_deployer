@@ -68,12 +68,12 @@ describe "simple ruby interface around git command line" do
     subject.git("something")    
   end
   
-  it "Should be able to do a successful command" do
+  it "should be able to do a successful command" do
     expect(subject).not_to receive(:puts)
     expect(subject.git('version')).to start_with("git version")
   end
   
-  it "Should be able to raise an StandardError on failed commands" do
+  it "should be able to raise an StandardError on failed commands" do
     expect {
       subject.git('error')
     }.to raise_error(StandardError, "Git command: 'error' failed. Message: : git: 'error' is not a git command. See 'git --help'.\n\nDid you mean this?\n	rerere\n")
