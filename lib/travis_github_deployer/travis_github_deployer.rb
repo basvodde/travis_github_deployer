@@ -61,7 +61,7 @@ class TravisGithubDeployer
     
     load_configuration
     clone_destination_repository
-    purge_files_from_history if not files_to_purge.empty?
+    purge_files_from_last_commit if not files_to_purge.empty?
     copy_files_in_destination_repository
     change_current_directory_to_cloned_repository
     prepare_credentials_based_on_environment_variables
@@ -164,9 +164,10 @@ class TravisGithubDeployer
     
   end
   
-  def purge_files_from_history
+  def purge_files_from_last_commit
     change_current_directory_to_cloned_repository
-    git.filter_branch(files_to_purge.join(" "))
+    git.reset(files_to_purge.join(" "))
+    git.amend_commit
     change_current_directory_back_to_original
   end
   

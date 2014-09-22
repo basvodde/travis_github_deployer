@@ -12,16 +12,28 @@ describe "Travis Github Deployer" do
     subject
   end
   
-  it "can deploy to a destination repository" do
-    ENV['TRAVIS_PULL_REQUEST']="false"
-    ENV['GIT_NAME']="Foo"
-    expect(subject).to receive(:load_configuration)
-    expect(subject).to receive(:clone_destination_repository)
-    expect(subject).to receive(:prepare_credentials_based_on_environment_variables)
-    expect(subject).to receive(:copy_files_in_destination_repository)
-    expect(subject).to receive(:change_current_directory_to_cloned_repository)
-    expect(subject).to receive(:commit_and_push_files)
-    subject.deploy
+  context "can deploy to a destination repository" do
+  
+     before(:each) do
+      ENV['TRAVIS_PULL_REQUEST']="false"
+      ENV['GIT_NAME']="Foo"
+      expect(subject).to receive(:load_configuration)
+      expect(subject).to receive(:clone_destination_repository)
+      expect(subject).to receive(:prepare_credentials_based_on_environment_variables)
+      expect(subject).to receive(:copy_files_in_destination_repository)
+      expect(subject).to receive(:change_current_directory_to_cloned_repository)
+      expect(subject).to receive(:commit_and_push_files)
+    end
+    
+    it "without files to purge" do
+      subject.deploy
+    end
+    
+    it "with files to purge" do
+      expect(subject).to receive(:purge_files_from_last_commit)
+      subject.files_to_purge << "foo"
+      subject.deploy
+    end
   end
   
   it "will not deploy on a pull request" do
@@ -113,14 +125,15 @@ describe "Travis Github Deployer" do
   
   context "actually committing the files" do
     
-    it "can purge files from history and force-push" do
+    it "can purge files from latest commit and force-push" do
       files = ["dir/onefile", "twofile"]
       allow(Dir).to receive(:chdir)
       allow(@git).to receive_messages(add: nil, commit: nil)
       expect(subject).to receive(:files_to_purge).and_return(files).twice
-      expect(@git).to receive(:filter_branch).with(files.join(" "))
+      expect(@git).to receive(:reset).with(files.join(" "))
+      expect(@git).to receive(:amend_commit)
       expect(@git).to receive(:force_push)
-      subject.purge_files_from_history
+      subject.purge_files_from_last_commit
       subject.commit_and_push_files
     end
   
