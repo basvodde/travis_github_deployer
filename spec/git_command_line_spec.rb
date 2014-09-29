@@ -3,7 +3,7 @@ require 'travis_github_deployer.rb'
 
 describe "simple ruby interface around git command line" do
   
-  subject { GitCommandLine.new}
+  subject {GitCommandLine.new}
   
   it "can do a git clone" do
     expect(subject).to receive(:git).with("clone repository destination")
@@ -20,13 +20,15 @@ describe "simple ruby interface around git command line" do
     subject.commit("message")
   end
   
-  it "can purge files from history" do
-    expect(subject).to receive(:git).with(
-      "filter-branch --force --index-filter " +
-      "'git rm --cached --ignore-unmatch file1 file2' " +
-      "--prune-empty --tag-name-filter cat -- --all"
-    )
-    subject.filter_branch("file1 file2")
+  it "can amend a commit" do
+    expect(subject).to receive(:git).with('commit --amend --reuse-message master')
+    subject.amend_commit
+  end
+  
+  it "can reset files to the root commit" do
+    expect(subject).to receive(:git).with("reset \$(git rev-list --max-parents=0 HEAD)" +
+      " -- file1 file2")
+    subject.reset("file1 file2")
   end
   
   it "can push" do
@@ -34,7 +36,7 @@ describe "simple ruby interface around git command line" do
     subject.push
   end
   
-  it "can force-push" do
+  it "can do a force-push" do
     expect(subject).to receive(:git).with("push -f")
     subject.force_push
   end
@@ -68,12 +70,12 @@ describe "simple ruby interface around git command line" do
     subject.git("something")    
   end
   
-  it "Should be able to do a successful command" do
+  it "should be able to do a successful command" do
     expect(subject).not_to receive(:puts)
     expect(subject.git('version')).to start_with("git version")
   end
   
-  it "Should be able to raise an StandardError on failed commands" do
+  it "should be able to raise an StandardError on failed commands" do
     expect {
       subject.git('error')
     }.to raise_error(StandardError, "Git command: 'error' failed. Message: : git: 'error' is not a git command. See 'git --help'.\n\nDid you mean this?\n	rerere\n")

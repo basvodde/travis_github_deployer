@@ -1,4 +1,4 @@
-
+#!/usr/bin/env ruby -w
 
 class GitCommandLine
   
@@ -18,11 +18,12 @@ class GitCommandLine
     git("commit -m \"#{message}\"")
   end
   
-  def filter_branch(patterns)
-    git("filter-branch --force --index-filter " +
-        "'git rm --cached --ignore-unmatch #{patterns}' " +
-        "--prune-empty --tag-name-filter cat -- --all"
-    )
+  def amend_commit
+    git("commit --amend --reuse-message master")
+  end
+  
+  def reset(files_to_reset)
+    git("reset \$(git rev-list --max-parents=0 HEAD) -- #{files_to_reset}")
   end
   
   def force_push
